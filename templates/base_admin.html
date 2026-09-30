@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Administração{% endblock %} — Sinergia Agro</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+<div class="layout-admin">
+  <nav class="menu-admin">
+    <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Sinergia Agro" style="height:36px;margin-bottom:24px;">
+
+    {% if session.get('departamento') == 'Qualidade' %}
+      <a href="{{ url_for('admin_status') }}">Status da qualidade</a>
+      <a href="{{ url_for('admin_indicadores') }}">Indicadores</a>
+      <a href="{{ url_for('admin_em_formulacao') }}">Em formulação</a>
+    {% elif session.get('departamento') in ['RH', 'Marketing'] %}
+      <a href="{{ url_for('admin_mural') }}">Mural</a>
+      <a href="{{ url_for('admin_noticias') }}">Notícias (RSS)</a>
+    {% elif session.get('departamento') == 'TI' %}
+      <a href="{{ url_for('admin_usuarios') }}">Usuários</a>
+      <a href="{{ url_for('admin_auditoria') }}">Log de auditoria</a>
+    {% endif %}
+
+    <a href="{{ url_for('index') }}">Ver painel</a>
+    <a href="{{ url_for('trocar_senha') }}">Trocar senha</a>
+    <a href="{{ url_for('logout') }}">Sair</a>
+  </nav>
+  <main class="area-admin">
+    {% block content %}
+    {% endblock %}
+  </main>
+</div>
+</body>
+</html>

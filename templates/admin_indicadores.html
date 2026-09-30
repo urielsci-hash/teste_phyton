@@ -1,0 +1,93 @@
+{% extends "base_admin.html" %}
+{% block title %}Indicadores{% endblock %}
+
+{% block content %}
+<div class="cabecalho-secao">
+  <h2>Indicadores</h2>
+  <button class="botao-primario" onclick="document.getElementById('form-upload').style.display='block'">+ Enviar nova planilha (.xlsx)</button>
+</div>
+
+{% if mensagem %}<div class="mensagem sucesso">{{ mensagem }}</div>{% endif %}
+{% if erro %}<div class="mensagem erro">{{ erro }}</div>{% endif %}
+
+<div id="form-upload" class="cartao" style="display:none; margin-bottom:24px;">
+  <form method="post" enctype="multipart/form-data" action="{{ url_for('admin_indicadores') }}">
+    <p class="texto-ajuda" style="margin-bottom:16px;">
+      O sistema lê a <strong>1ª linha como categorias (eixo X)</strong> e a <strong>2ª linha como valores</strong>.<br>
+      Cada aba da planilha vira um indicador com o mesmo nome da aba (se já existir um indicador com esse nome, ele será atualizado).
+    </p>
+
+    <div class="grupo-campos">
+      <div class="campo">
+        <label>Período de exibição (início)</label>
+        <input type="date" name="data_inicio" value="{{ hoje }}" required>
+      </div>
+      <div class="campo">
+        <label>Período de exibição (fim)</label>
+        <input type="date" name="data_fim" required>
+      </div>
+    </div>
+
+    <div class="campo">
+      <label>Arquivo .xlsx</label>
+      <input type="file" name="arquivo" accept=".xlsx" required>
+    </div>
+
+    <div class="acoes-form">
+      <button type="submit" name="enviar_planilha" value="1" class="botao-primario">Processar planilha</button>
+      <button type="button" class="botao-secundario" onclick="document.getElementById('form-upload').style.display='none'">Cancelar</button>
+    </div>
+  </form>
+</div>
+
+<div class="filtros" style="margin-bottom:16px;">
+  <a href="?mostrar=ativos" class="{{ 'ativo' if mostrar_todos != '1' else '' }}" style="text-decoration:none; margin-right:16px;">Em exibição</a>
+  <a href="?mostrar=todos" class="{{ 'ativo' if mostrar_todos == '1' else '' }}" style="text-decoration:none;">Mostrar todos</a>
+</div>
+
+<table class="tabela">
+  <thead>
+    <tr>
+      <th>Nome do Indicador</th>
+      <th>Tipo de Gráfico</th>
+      <th>Período</th>
+      <th>Status</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for ind in indicadores %}
+    <tr>
+      <td><strong>{{ ind.nome }}</strong></td>
+      <td>
+        <form method="post" action="{{ url_for('admin_indicadores') }}" style="display:flex;gap:8px;">
+          <input type="hidden" name="id" value="{{ ind.id }}">
+          <select name="tipo_grafico">
+            <option value="barra" {% if ind.tipo_grafico == 'barra' %}selected{% endif %}>Barra</option>
+            <option value="linha" {% if ind.tipo_grafico == 'linha' %}selected{% endif %}>Linha</option>
+          </select>
+          <button type="submit" name="alterar_tipo" value="1" class="botao-secundario" style="padding:4px 8px;font-size:0.8rem;">Salvar</button>
+        </form>
+      </td>
+      <td>{{ ind.data_inicio }} a {{ ind.data_fim }}</td>
+      <td>
+        <form method="post" action="{{ url_for('admin_indicadores') }}">
+          <input type="hidden" name="id" value="{{ ind.id }}">
+          <button type="submit" name="alternar_ativo" value="1" class="badge {{ 'badge-ok' if ind.ativo else 'badge-inativo' }}" style="border:none;cursor:pointer;">
+            {{ "Ativo" if ind.ativo else "Inativo" }}
+          </button>
+        </form>
+      </td>
+      <td>
+        <form method="post" action="{{ url_for('admin_indicadores') }}" onsubmit="return confirm('Excluir este indicador definitivamente?')">
+          <input type="hidden" name="id" value="{{ ind.id }}">
+          <button type="submit" name="excluir" value="1" class="botao-excluir">Excluir</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" style="text-align:center;">Nenhum indicador encontrado.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

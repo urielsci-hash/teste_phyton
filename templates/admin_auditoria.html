@@ -1,0 +1,47 @@
+{% extends "base_admin.html" %}
+{% block title %}Log de auditoria{% endblock %}
+
+{% block content %}
+<div class="cabecalho-secao">
+  <h2>Log de auditoria</h2>
+</div>
+
+<p style="font-size:13px;color:#666;margin-bottom:16px;">
+  Aqui aparece quem mexeu em qual módulo e quando — sem mostrar o conteúdo alterado. Registros com mais de 30 dias são apagados automaticamente.
+</p>
+
+<form method="get" style="margin-bottom:16px;" class="filtros">
+  <div class="campo" style="display:inline-block; margin-right:8px; margin-bottom:0;">
+    <label style="display:inline-block; margin-right:8px;">Filtrar por data:</label>
+    <input type="date" name="data" value="{{ data_filtro }}" onchange="this.form.submit()" style="display:inline-block; width:auto;">
+  </div>
+  {% if data_filtro %}
+    <a href="{{ url_for('admin_auditoria') }}" class="botao-secundario" style="text-decoration:none;">Limpar</a>
+  {% endif %}
+</form>
+
+<table class="tabela">
+  <thead>
+    <tr>
+      <th>Data/hora</th>
+      <th>Usuário</th>
+      <th>Departamento</th>
+      <th>Módulo</th>
+      <th>Ação</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for r in registros %}
+    <tr>
+      <td>{{ r.data_hora }}</td>
+      <td>{{ r.usuario_nome }}</td>
+      <td>{{ r.departamento }}</td>
+      <td>{{ r.modulo }}</td>
+      <td>{{ r.descricao }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="5" style="text-align:center;">Nenhum registro.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

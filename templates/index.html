@@ -1,21 +1,16 @@
-<?php
-require_once __DIR__ . "/config/config.php";
-require_once __DIR__ . "/includes/auth.php";
-exigirLogin();
-?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Painel de Qualidade — Sinergia Agro</title>
-<link rel="stylesheet" href="assets/css/style.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 <body class="painel">
   <header class="cabecalho">
     <div class="marca">
-      <img src="assets/img/logo.png" alt="Sinergia Agro" class="logo">
+      <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Sinergia Agro" class="logo">
       <div class="separador-cabecalho"></div>
       <div>
         <h1>Painel de Qualidade</h1>
@@ -82,6 +77,6 @@ exigirLogin();
     <div id="noticias-lista" class="noticias-lista"></div>
   </footer>
 
-  <script src="assets/js/dashboard.js"></script>
+  <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 </body>
 </html>

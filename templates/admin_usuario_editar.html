@@ -1,0 +1,38 @@
+{% extends "base_admin.html" %}
+{% block title %}Editar Usuário{% endblock %}
+
+{% block content %}
+<div class="cabecalho-secao">
+  <h2>Editar Usuário</h2>
+</div>
+
+{% if mensagem %}<div class="mensagem sucesso">{{ mensagem }}</div>{% endif %}
+
+<form class="cartao formulario" method="post">
+  <input type="hidden" name="id" value="{{ usuario.id }}">
+
+  <div class="campo">
+    <label>Nome completo</label>
+    <input type="text" name="nome" value="{{ usuario.nome }}" required>
+  </div>
+
+  <div class="campo">
+    <label>E-mail</label>
+    <input type="email" name="email" value="{{ usuario.email }}" required>
+  </div>
+
+  <div class="campo">
+    <label>Departamento</label>
+    <select name="departamento_id" required>
+      {% for d in departamentos %}
+        <option value="{{ d.id }}" {% if d.id == usuario.departamento_id %}selected{% endif %}>{{ d.nome }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="acoes-form" style="margin-top:24px;">
+    <button type="submit" class="botao-primario">Salvar Alterações</button>
+    <a href="{{ url_for('admin_usuarios') }}" class="botao-secundario" style="text-decoration:none;">Voltar</a>
+  </div>
+</form>
+{% endblock %}
