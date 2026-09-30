@@ -1,0 +1,84 @@
+{% extends "base_admin.html" %}
+{% block title %}Em Formulação (Capacidade){% endblock %}
+
+{% block content %}
+<div class="cabecalho-secao">
+  <h2>Em Formulação (Armazenamento diário)</h2>
+</div>
+
+{% if mensagem %}<div class="mensagem sucesso">{{ mensagem }}</div>{% endif %}
+
+<div style="display:flex; gap:24px; flex-wrap:wrap;">
+  <div class="cartao" style="flex:1; min-width:300px;">
+    <h3>Lançamento do dia</h3>
+    <p class="texto-ajuda">O "Armazenamento utilizado" que aparece na TV será calculado automaticamente a partir da soma dos litros dos 4 tanques informados abaixo.</p>
+
+    <form method="post" action="{{ url_for('admin_em_formulacao', dia=dia_selecionado) }}">
+      <div class="campo">
+        <label>Data de referência</label>
+        <input type="date" name="data" id="data-ref" value="{{ dia_selecionado }}" required onchange="window.location.href='?dia=' + this.value">
+      </div>
+      <div class="campo">
+        <label>Capacidade Total (Litros)</label>
+        <input type="number" step="0.01" name="capacidade_total" value="{{ producao.capacidade_total_litros if producao else '' }}" required placeholder="Ex.: 45000">
+      </div>
+
+      <div style="margin-top:24px;">
+        <h4 style="margin-bottom:12px;border-bottom:1px solid #ddd;padding-bottom:8px;">Detalhamento por Tanque</h4>
+
+        {% for tanque in tanques_disponiveis %}
+        <div class="grupo-campos" style="background:#f9fafb; padding:12px; border-radius:4px; margin-bottom:12px; border:1px solid #e5e7eb;">
+          <div style="font-weight:bold; width:40px; align-self:center;">{{ tanque }}</div>
+          <div class="campo" style="margin-bottom:0;">
+            <label>Produto formulado</label>
+            <input type="text" name="tanque_produto_{{ tanque }}" value="{{ valores_tanques[tanque].produto if tanque in valores_tanques else '' }}">
+          </div>
+          <div class="campo" style="margin-bottom:0;">
+            <label>Litros armazenados</label>
+            <input type="number" step="0.01" name="tanque_{{ tanque }}" value="{{ valores_tanques[tanque].valor_litros if tanque in valores_tanques else '' }}">
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="acoes-form" style="margin-top:24px;">
+        <button type="submit" name="salvar" value="1" class="botao-primario">Salvar Produção Diária</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="cartao" style="flex:1; min-width:300px;">
+    <h3>Histórico de Lançamentos</h3>
+    {% if historico %}
+    <table class="tabela">
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Total de Litros</th>
+          <th>Utilizado (Soma)</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for reg in historico %}
+        <tr>
+          <td>{{ reg.data }}</td>
+          <td>{{ reg.capacidade_total_litros }} L</td>
+          <td>{{ reg.armazenamento_utilizado_litros }} L</td>
+          <td>
+            <a href="?dia={{ reg.data }}" class="badge badge-inativo" style="text-decoration:none;">Editar</a>
+            <form method="post" action="{{ url_for('admin_em_formulacao', dia=dia_selecionado) }}" style="display:inline;" onsubmit="return confirm('Excluir este lançamento?')">
+              <input type="hidden" name="id" value="{{ reg.id }}">
+              <button type="submit" name="excluir" value="1" class="botao-excluir" style="padding:4px 8px;font-size:0.8rem;margin-left:4px;">Excluir</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p style="text-align:center; padding:16px;">Nenhum lançamento no histórico.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

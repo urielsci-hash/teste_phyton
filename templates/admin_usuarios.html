@@ -1,0 +1,110 @@
+{% extends "base_admin.html" %}
+{% block title %}Gerenciar Usuários{% endblock %}
+
+{% block content %}
+<div class="cabecalho-secao">
+  <h2>Usuários do Sistema</h2>
+  <button class="botao-primario" onclick="document.getElementById('form-criar').style.display='block'">+ Novo Usuário</button>
+</div>
+
+{% if mensagem %}<div class="mensagem sucesso">{{ mensagem }}</div>{% endif %}
+{% if erro %}<div class="mensagem erro">{{ erro }}</div>{% endif %}
+
+<div id="form-criar" class="cartao" style="display:none; margin-bottom:24px;">
+  <form method="post" action="{{ url_for('admin_usuarios') }}">
+    <div class="grupo-campos">
+      <div class="campo" style="flex:2">
+        <label>Nome completo</label>
+        <input type="text" name="nome" required>
+      </div>
+      <div class="campo" style="flex:2">
+        <label>E-mail</label>
+        <input type="email" name="email" required>
+      </div>
+      <div class="campo" style="flex:1">
+        <label>Departamento</label>
+        <select name="departamento_id" required>
+          <option value="">Selecione...</option>
+          {% for d in departamentos %}
+            <option value="{{ d.id }}">{{ d.nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="campo">
+      <label>Senha provisória</label>
+      <input type="password" name="senha" required>
+      <small class="texto-ajuda">O usuário será obrigado a trocar esta senha no primeiro acesso.</small>
+    </div>
+    <div class="acoes-form">
+      <button type="submit" name="criar" value="1" class="botao-primario">Criar Usuário</button>
+      <button type="button" class="botao-secundario" onclick="document.getElementById('form-criar').style.display='none'">Cancelar</button>
+    </div>
+  </form>
+</div>
+
+<table class="tabela">
+  <thead>
+    <tr>
+      <th>Nome / E-mail</th>
+      <th>Departamento</th>
+      <th>Status</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for u in usuarios %}
+    <tr>
+      <td>
+        <strong>{{ u.nome }}</strong><br>
+        <small style="color:#666">{{ u.email }}</small>
+      </td>
+      <td>{{ u.departamento_nome }}</td>
+      <td>
+        <form method="post" action="{{ url_for('admin_usuarios') }}">
+          <input type="hidden" name="id" value="{{ u.id }}">
+          <button type="submit" name="alternar_ativo" value="1" class="badge {{ 'badge-ok' if u.ativo else 'badge-inativo' }}" style="border:none;cursor:pointer;">
+            {{ "Ativo" if u.ativo else "Inativo" }}
+          </button>
+        </form>
+      </td>
+      <td style="display:flex;gap:8px;">
+        <a href="{{ url_for('admin_usuario_editar', id=u.id) }}" class="botao-secundario" style="padding:4px 8px;font-size:0.8rem;text-decoration:none;">Editar</a>
+
+        <button type="button" onclick="if(confirm('Redefinir senha do usuário?')){ document.getElementById('form-redefinir-{{ u.id }}').submit(); }" class="botao-secundario" style="padding:4px 8px;font-size:0.8rem;">Nova senha</button>
+        <form id="form-redefinir-{{ u.id }}" method="post" action="{{ url_for('admin_usuarios') }}" style="display:none;">
+          <input type="hidden" name="id" value="{{ u.id }}">
+          <input type="hidden" name="redefinir_senha" value="1">
+          <!-- Simplificação pra prompt no JS -->
+          <input type="hidden" name="nova_senha" id="input-senha-{{ u.id }}" value="123456">
+        </form>
+
+        {% if u.id != session.usuario_id %}
+        <form method="post" action="{{ url_for('admin_usuarios') }}" onsubmit="return confirm('ATENÇÃO: A exclusão definitiva só será permitida se o usuário nunca tiver lançado nenhum dado no sistema. Caso contrário, desative-o em vez de excluir. Excluir agora?')">
+          <input type="hidden" name="id" value="{{ u.id }}">
+          <button type="submit" name="excluir" value="1" class="botao-excluir" style="padding:4px 8px;font-size:0.8rem;">Excluir</button>
+        </form>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<script>
+// Ajuste simples para pedir a senha nova via JS
+document.querySelectorAll('button[onclick*="form-redefinir"]').forEach(btn => {
+    btn.onclick = function(e) {
+        e.preventDefault();
+        const row = this.closest('tr');
+        const form = this.nextElementSibling;
+        const pwdInput = form.querySelector('input[name="nova_senha"]');
+        const pwd = prompt('Digite a nova senha provisória:');
+        if(pwd) {
+            pwdInput.value = pwd;
+            form.submit();
+        }
+    }
+});
+</script>
+{% endblock %}

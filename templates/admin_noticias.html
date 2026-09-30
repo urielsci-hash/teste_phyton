@@ -1,0 +1,64 @@
+{% extends "base_admin.html" %}
+{% block title %}Notícias (RSS){% endblock %}
+
+{% block content %}
+<div class="cabecalho-secao">
+  <h2>Notícias (RSS)</h2>
+  <button class="botao-primario" onclick="document.getElementById('form-adicionar').style.display='block'">+ Novo Feed</button>
+</div>
+
+{% if mensagem %}<div class="mensagem sucesso">{{ mensagem }}</div>{% endif %}
+{% if erro %}<div class="mensagem erro">{{ erro }}</div>{% endif %}
+
+<div id="form-adicionar" class="cartao" style="display:none; margin-bottom:24px;">
+  <form method="post" action="{{ url_for('admin_noticias') }}">
+    <div class="campo">
+      <label>URL do Feed RSS</label>
+      <input type="url" name="url_feed" placeholder="https://site.com/rss" required>
+    </div>
+    <div class="acoes-form">
+      <button type="submit" name="adicionar" value="1" class="botao-primario">Salvar Feed</button>
+      <button type="button" class="botao-secundario" onclick="document.getElementById('form-adicionar').style.display='none'">Cancelar</button>
+    </div>
+  </form>
+</div>
+
+<table class="tabela">
+  <thead>
+    <tr>
+      <th>URL</th>
+      <th>Status</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for feed in feeds %}
+    <tr>
+      <td>
+        <form method="post" action="{{ url_for('admin_noticias') }}" style="display:flex; gap:8px;" class="form-edicao">
+          <input type="hidden" name="id" value="{{ feed.id }}">
+          <input type="url" name="url_feed" value="{{ feed.url_feed }}" required style="flex:1;">
+          <button type="submit" name="editar" value="1" class="botao-secundario" style="padding:4px 8px;font-size:0.8rem;">Salvar edição</button>
+        </form>
+      </td>
+      <td>
+        <form method="post" action="{{ url_for('admin_noticias') }}">
+          <input type="hidden" name="id" value="{{ feed.id }}">
+          <button type="submit" name="alternar_ativo" value="1" class="badge {{ 'badge-ok' if feed.ativo else 'badge-inativo' }}" style="border:none;cursor:pointer;">
+            {{ "Ativo" if feed.ativo else "Inativo" }}
+          </button>
+        </form>
+      </td>
+      <td>
+        <form method="post" action="{{ url_for('admin_noticias') }}" onsubmit="return confirm('Excluir este feed?')">
+          <input type="hidden" name="id" value="{{ feed.id }}">
+          <button type="submit" name="excluir" value="1" class="botao-excluir">Excluir</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="3" style="text-align:center;">Nenhum feed cadastrado.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

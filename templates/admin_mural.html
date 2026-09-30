@@ -1,0 +1,122 @@
+{% extends "base_admin.html" %}
+{% block title %}Mural de Avisos{% endblock %}
+
+{% block content %}
+<div class="cabecalho-secao">
+  <h2>Mural de Avisos</h2>
+  <button class="botao-primario" onclick="document.getElementById('form-adicionar').style.display='block'">+ Novo Aviso</button>
+</div>
+
+{% if mensagem %}<div class="mensagem sucesso">{{ mensagem }}</div>{% endif %}
+{% if erro %}<div class="mensagem erro">{{ erro }}</div>{% endif %}
+
+<div id="form-adicionar" class="cartao" style="display:none; margin-bottom:24px;">
+  <form method="post" action="{{ url_for('admin_mural') }}" enctype="multipart/form-data">
+    <div class="grupo-campos">
+      <div class="campo" style="flex:2">
+        <label>Título (interno/referência)</label>
+        <input type="text" name="titulo" required>
+      </div>
+      <div class="campo" style="flex:1">
+        <label>Tipo</label>
+        <select name="tipo" id="tipo-post" onchange="alternarCamposMural()">
+          <option value="texto">Apenas texto</option>
+          <option value="imagem">Apenas imagem</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grupo-campos">
+      <div class="campo">
+        <label>Exibir de:</label>
+        <input type="date" name="data_inicio" value="{{ hoje }}" required>
+      </div>
+      <div class="campo">
+        <label>Exibir até:</label>
+        <input type="date" name="data_fim" required>
+      </div>
+    </div>
+
+    <div class="campo" id="campo-texto">
+      <label>Conteúdo do aviso</label>
+      <textarea name="conteudo" rows="4"></textarea>
+    </div>
+
+    <div class="campo" id="campo-imagem" style="display:none;">
+      <label>Imagem (JPG/PNG)</label>
+      <input type="file" name="imagem" accept=".jpg,.jpeg,.png">
+    </div>
+
+    <div class="acoes-form">
+      <button type="submit" name="publicar" value="1" class="botao-primario">Publicar</button>
+      <button type="button" class="botao-secundario" onclick="document.getElementById('form-adicionar').style.display='none'">Cancelar</button>
+    </div>
+  </form>
+</div>
+
+<div class="filtros" style="margin-bottom:16px;">
+  <a href="?mostrar=ativos" class="{{ 'ativo' if mostrar_todos != '1' else '' }}" style="text-decoration:none; margin-right:16px;">Em exibição</a>
+  <a href="?mostrar=todos" class="{{ 'ativo' if mostrar_todos == '1' else '' }}" style="text-decoration:none;">Mostrar todos (histórico)</a>
+</div>
+
+<table class="tabela">
+  <thead>
+    <tr>
+      <th>Título / Tipo</th>
+      <th>Período de exibição</th>
+      <th>Status</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for post in mural %}
+    <tr>
+      <td>
+        <strong>{{ post.titulo }}</strong><br>
+        <span style="font-size:0.85rem;color:var(--cor-texto-secundario)">
+          {% if post.tipo == 'imagem' %}
+            🖼️ Imagem
+            {% if post.imagem_path %}
+              <a href="{{ url_for('static', filename='uploads/mural/' ~ post.imagem_path) }}" target="_blank">(Ver)</a>
+            {% endif %}
+          {% else %}
+            📝 Texto
+          {% endif %}
+        </span>
+      </td>
+      <td>{{ post.data_inicio }} a {{ post.data_fim }}</td>
+      <td>
+        <form method="post" action="{{ url_for('admin_mural') }}">
+          <input type="hidden" name="id" value="{{ post.id }}">
+          <button type="submit" name="alternar_ativo" value="1" class="badge {{ 'badge-ok' if post.ativo else 'badge-inativo' }}" style="border:none;cursor:pointer;">
+            {{ "Ativo" if post.ativo else "Inativo" }}
+          </button>
+        </form>
+      </td>
+      <td>
+        <form method="post" action="{{ url_for('admin_mural') }}" onsubmit="return confirm('Excluir este aviso definitivamente?')">
+          <input type="hidden" name="id" value="{{ post.id }}">
+          <input type="hidden" name="imagem_antiga" value="{{ post.imagem_path or '' }}">
+          <button type="submit" name="excluir" value="1" class="botao-excluir">Excluir</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" style="text-align:center;">Nenhum aviso encontrado.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<script>
+function alternarCamposMural() {
+    const tipo = document.getElementById('tipo-post').value;
+    if (tipo === 'imagem') {
+        document.getElementById('campo-imagem').style.display = 'block';
+        document.getElementById('campo-texto').style.display = 'none';
+    } else {
+        document.getElementById('campo-imagem').style.display = 'none';
+        document.getElementById('campo-texto').style.display = 'block';
+    }
+}
+</script>
+{% endblock %}
