@@ -31,6 +31,12 @@ def init_sqlite_db():
     # We add the index manually
     statements.append("CREATE INDEX idx_status_data ON status_qualidade_dia (data)")
 
+    # Injeta usuário de TI no banco de dados local com o hash informado
+    statements.append("""
+        INSERT INTO usuarios (nome, email, senha_hash, departamento_id, deve_trocar_senha)
+        VALUES ('TI Admin', 'ti@sinergia-agro.com.br', 'scrypt:32768:8:1$41CsqDOIMycHEkLC$d69161fa23605d1a138694488cc055aadf349b3d6d916b56bfafcd4da3239522dbb1e80a50a418b0fe44271882c2e1e87e2390a28bd17126dee44842a9838e66', 4, 0);
+    """)
+
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
